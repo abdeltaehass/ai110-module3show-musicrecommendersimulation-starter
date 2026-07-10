@@ -162,11 +162,11 @@ Top recommendations:
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+**Stress test: five user profiles.** I ran the recommender against three realistic profiles (High-Energy Pop, Chill Lofi, Deep Intense Rock) and two adversarial ones (a "conflicted" user wanting sad mood at 0.9 energy, and a k-pop fan whose genre isn't in the catalog). Full outputs and pairwise comparisons are in [model_card.md](model_card.md#7-evaluation). Highlights: the pop and lofi profiles share zero songs (clean separation), the conflicted user's sad preference mostly loses to the energy term, and the k-pop user gets confident-looking recommendations built entirely on energy math.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+**Weight shift: energy 1.5 → 3.0, genre 2.0 → 1.0.** For all three realistic profiles the top-5 *order didn't change at all* — only the score gaps compressed, because those users' genre, mood, and energy preferences all point at the same songs anyway. But the conflicted profile flipped: *Rainy Platform* (the catalog's only sad song, and that user's only mood match) dropped out of the top 5, replaced by *Cumbia Sunrise* and *Iron Choir* on raw energy alone. Conclusion: weights are nearly irrelevant for coherent users and completely decisive for conflicted ones — and this particular change made results different, not more accurate, so I reverted to the original weights.
+
+**Observation without a code change: the energy floor.** Because every song earns energy-closeness points, a song with zero categorical matches can still make a top-5 list (e.g. *Cumbia Sunrise* for both the pop and rock fans). This is a scoring-design bias, not a bug — documented in the model card's Limitations section.
 
 ---
 
