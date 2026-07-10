@@ -1,21 +1,21 @@
-id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
-1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18
-2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71
-3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10
-4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86
-5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05
-6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92
-7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89
-8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
-9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
-10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
-11,Concrete Poetry,Verse Motive,hip hop,confident,0.68,92,0.62,0.85,0.12
-12,Dust Road Home,Willow Creek Band,country,nostalgic,0.55,104,0.68,0.61,0.74
-13,Moonlit Etude,Clara Voss,classical,melancholy,0.15,66,0.32,0.20,0.97
-14,Bassline Horizon,Klub Vector,edm,energetic,0.95,128,0.72,0.93,0.03
-15,Salt & Cedar,Fern & Field,folk,romantic,0.33,84,0.58,0.45,0.91
-16,Iron Choir,Gravemarch,metal,angry,0.97,160,0.25,0.55,0.02
-17,Velvet Hour,Sable Rose,r&b,romantic,0.52,96,0.66,0.74,0.38
-18,Island Clockwork,Palm Circuit,reggae,relaxed,0.48,76,0.79,0.70,0.55
-19,Rainy Platform,Neon Echo,synthwave,sad,0.44,98,0.28,0.52,0.30
-20,Cumbia Sunrise,Rio Bloom,latin,energetic,0.86,122,0.88,0.90,0.28
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity,release_decade,duration_sec,vocalness,mood_tags
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,78,2020,201,0.85,euphoric|summer
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,64,2020,174,0.05,dreamy|nocturnal
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,71,2010,233,0.80,aggressive|driving
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,58,2020,158,0.02,cozy|rainy-day
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,88,2020,192,0.90,pump-up|euphoric
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,41,2010,305,0.00,dreamy|weightless
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,52,2000,226,0.30,cozy|warm
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,67,2010,248,0.40,nocturnal|neon
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,61,2020,183,0.03,steady|calm
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,74,2010,214,0.88,golden-hour|euphoric
+11,Concrete Poetry,Verse Motive,hip hop,confident,0.68,92,0.62,0.85,0.12,82,2010,205,0.95,swagger|gritty
+12,Dust Road Home,Willow Creek Band,country,nostalgic,0.55,104,0.68,0.61,0.74,66,2000,237,0.85,nostalgic|homesick
+13,Moonlit Etude,Clara Voss,classical,melancholy,0.15,66,0.32,0.20,0.97,35,1990,289,0.00,wistful|delicate
+14,Bassline Horizon,Klub Vector,edm,energetic,0.95,128,0.72,0.93,0.03,90,2020,198,0.35,euphoric|festival
+15,Salt & Cedar,Fern & Field,folk,romantic,0.33,84,0.58,0.45,0.91,47,2010,221,0.75,tender|earthy
+16,Iron Choir,Gravemarch,metal,angry,0.97,160,0.25,0.55,0.02,59,2000,262,0.85,aggressive|dark
+17,Velvet Hour,Sable Rose,r&b,romantic,0.52,96,0.66,0.74,0.38,76,2020,209,0.92,smooth|late-night
+18,Island Clockwork,Palm Circuit,reggae,relaxed,0.48,76,0.79,0.70,0.55,63,1990,217,0.70,sunny|laid-back
+19,Rainy Platform,Neon Echo,synthwave,sad,0.44,98,0.28,0.52,0.30,55,2010,244,0.45,melancholy|nocturnal
+20,Cumbia Sunrise,Rio Bloom,latin,energetic,0.86,122,0.88,0.90,0.28,80,2020,195,0.80,festive|sunny

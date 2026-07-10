@@ -77,6 +77,15 @@ flowchart LR
 
 In words: the user profile comes in, `load_songs` reads the CSV into song dictionaries, `score_song` judges each song one at a time against the profile (producing a score and the reasons behind it), and `recommend_songs` sorts all scored songs and returns the top *k* with explanations.
 
+### Optional Extensions (implemented)
+
+- **Five new song attributes** — `popularity` (0–100), `release_decade`, `duration_sec`, `vocalness` (0–1), and pipe-separated `mood_tags` (e.g. `cozy|warm`). Each new scoring term is gated behind a new optional preference key (`prefers_popular`, `favorite_decade`, `prefers_instrumental`), so older profiles score exactly as before. Mood tags also give partial credit (+0.5) when the primary mood misses but the user's mood appears in a song's tags — softening the exact-string-matching bias found in Phase 4.
+- **Four scoring modes** via a lightweight Strategy pattern: `balanced`, `genre-first`, `mood-first`, and `energy-focused` are interchangeable weight tables in `SCORING_MODES`; one shared `score_song` consumes whichever is selected. The same conflicted user gets a different #1 song under each mode.
+- **Diversity penalty** — with `diversify=True`, ranking becomes greedy selection where each candidate loses 0.5 per already-picked song by the same artist and 0.3 per same genre, and the penalty is printed in the reasons.
+- **ASCII table output** — recommendations render as a bordered table (title, artist, score, wrapped reasons) with no external dependencies.
+
+See [ai_interactions.md](ai_interactions.md) for the agentic workflow and design pattern documentation.
+
 ### Biases I Expect
 
 - **Genre over-prioritization.** At +2.0, a genre match alone outscores a perfect mood match (+1.0). A mediocre lofi track can beat a jazz track that fits the user's mood and energy perfectly — great songs get ignored for having the "wrong" label.
@@ -123,28 +132,34 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Output of `python -m src.main` with the default pop/happy profile:
+Excerpt of `python -m src.main` (the full run covers six profiles, a scoring-mode comparison, and a diversity-penalty demo):
 
 ```
 Loaded songs: 20
-User profile: genre=pop, mood=happy, energy=0.8, acoustic=False
 
-Top recommendations:
+Profile: High-Energy Pop
+  favorite_genre=pop, favorite_mood=happy, target_energy=0.9, likes_acoustic=False
 
-1. Sunrise City — Neon Echo  [score: 4.47]
-   because: genre match: pop (+2.0); mood match: happy (+1.0); energy 0.82 vs target 0.80 (+1.47)
++----+----------------------+--------------------+-------+------------------------------------------------+
+| #  | Title                | Artist             | Score | Reasons                                        |
++----+----------------------+--------------------+-------+------------------------------------------------+
+| 1  | Sunrise City         | Neon Echo          |  4.38 | genre match: pop (+2.0); mood match: happy     |
+|    |                      |                    |       | (+1.0); energy 0.82 vs target 0.90 (+1.38)     |
+| 2  | Gym Hero             | Max Pulse          |  3.46 | genre match: pop (+2.0); energy 0.93 vs target |
+|    |                      |                    |       | 0.90 (+1.46)                                   |
+| 3  | Rooftop Lights       | Indigo Parade      |  2.29 | mood match: happy (+1.0); energy 0.76 vs       |
+|    |                      |                    |       | target 0.90 (+1.29)                            |
+| 4  | Storm Runner         | Voltline           |  1.48 | energy 0.91 vs target 0.90 (+1.48)             |
+| 5  | Cumbia Sunrise       | Rio Bloom          |  1.44 | energy 0.86 vs target 0.90 (+1.44)             |
++----+----------------------+--------------------+-------+------------------------------------------------+
 
-2. Gym Hero — Max Pulse  [score: 3.30]
-   because: genre match: pop (+2.0); energy 0.93 vs target 0.80 (+1.30)
-
-3. Rooftop Lights — Indigo Parade  [score: 2.44]
-   because: mood match: happy (+1.0); energy 0.76 vs target 0.80 (+1.44)
-
-4. Night Drive Loop — Neon Echo  [score: 1.42]
-   because: energy 0.75 vs target 0.80 (+1.42)
-
-5. Cumbia Sunrise — Rio Bloom  [score: 1.41]
-   because: energy 0.86 vs target 0.80 (+1.41)
+######################################################################
+# Scoring modes compared — Conflicted profile (sad + high energy)
+######################################################################
+       balanced: Bassline Horizon (3.42), Rainy Platform (1.81), Storm Runner (1.48)
+    genre-first: Bassline Horizon (4.71), Dust Road Home (0.99), Rainy Platform (0.91)
+     mood-first: Rainy Platform (3.54), Bassline Horizon (1.70), Dust Road Home (1.15)
+ energy-focused: Bassline Horizon (4.30), Storm Runner (3.96), Gym Hero (3.88)
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
