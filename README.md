@@ -17,17 +17,81 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+### How real platforms do it
 
-Some prompts to answer:
+Big platforms like Spotify and TikTok predict what you'll love next by combining two main strategies. **Collaborative filtering** looks at *other users' behavior*: if people who like the same songs as you also love a track you haven't heard, it gets recommended — no knowledge of the music itself is needed. **Content-based filtering** looks at *the attributes of the songs themselves*: genre, mood, tempo, energy, and audio features extracted from the actual track. If you keep playing chill low-tempo lofi, the system recommends more songs whose features look like that. Real systems feed both approaches with signals like likes, skips, replays, playlist adds, listening time, and audio analysis, then blend them with machine learning at massive scale.
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+My version is a **content-based recommender**: it has no other users to learn from, so it scores each song purely on how well its attributes match one user's stated taste profile. It prioritizes genre match first (the strongest taste signal), then mood, then how *close* the song's energy is to the user's ideal — not just high or low energy, but the right amount.
 
-You can include a simple diagram or bullet list if helpful.
+### Features my objects use
+
+Each `Song` uses:
+
+- `genre` (categorical — e.g. pop, lofi, rock)
+- `mood` (categorical — e.g. happy, chill, intense)
+- `energy` (0.0–1.0)
+- `acousticness` (0.0–1.0)
+- plus `tempo_bpm`, `valence`, and `danceability` are available in the data for experiments
+
+Each `UserProfile` stores:
+
+- `favorite_genre` — the genre the user gravitates toward
+- `favorite_mood` — the vibe they want right now
+- `target_energy` — their ideal energy level (0.0–1.0)
+- `likes_acoustic` — whether they prefer acoustic-sounding tracks
+
+### The Dataset
+
+The catalog (`data/songs.csv`) holds 20 songs spanning 15 genres (pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip hop, country, classical, edm, folk, metal, r&b, reggae, latin) and 12 moods (happy, chill, intense, relaxed, moody, focused, confident, nostalgic, melancholy, energetic, romantic, angry, sad). Numerical features stay on a 0.0–1.0 scale (except `tempo_bpm`) and were chosen to be internally consistent — e.g. the metal track has near-max energy and near-zero acousticness, the classical piece is the opposite.
+
+### The User Profile
+
+The demo taste profile the recommender will run against:
+
+```python
+user_prefs = {
+    "favorite_genre": "lofi",
+    "favorite_mood": "chill",
+    "target_energy": 0.35,
+    "likes_acoustic": True,
+}
+```
+
+**Can this profile differentiate "intense rock" from "chill lofi"?** Yes — checked against the catalog: *Storm Runner* (rock, intense, energy 0.91) misses on genre, misses on mood, and its energy is 0.56 away from the target, so it scores near zero. *Midnight Coding* (lofi, chill, energy 0.42) hits genre, hits mood, and is only 0.07 off on energy, scoring near the maximum. The gap between the best and worst match is wide, so the profile is discriminative.
+
+**Is it too narrow?** Somewhat, by design — all four preferences point at the same low-key vibe, which makes the filter-bubble risk easy to observe. But the energy-closeness and acoustic terms let near-miss songs surface: *Coffee Shop Stories* (jazz, relaxed, energy 0.37, acousticness 0.89) matches on zero categorical features yet still earns real points, which proves the system isn't purely genre-locked.
+
+### My Algorithm Recipe (finalized)
+
+**Scoring Rule** (computes one number for one song):
+
+- Genre matches the user's favorite: **+2.0** (weighted highest — genre is the strongest predictor of taste)
+- Mood matches: **+1.0**
+- Energy closeness: **+1.5 × (1 − |target_energy − song energy|)** — this rewards songs *near* the user's ideal energy instead of just favoring the highest or lowest values
+- Acoustic bonus: **+0.5** if the user likes acoustic and the song's acousticness is high
+
+**Ranking Rule** (turns scores into recommendations): score every song in the catalog, sort descending by score, and return the top *k*.
+
+We need both rules because they answer different questions. The scoring rule evaluates a single song in isolation — "how well does this one song fit this user?" — but a score by itself is meaningless without context (is 3.5 good?). The ranking rule compares scores *across* the whole catalog to decide which songs are the best available options. Scoring turns data into numbers; ranking turns numbers into a recommendation list.
+
+### Data Flow
+
+```mermaid
+flowchart LR
+    A[Input<br>user_prefs dict] --> B[Load catalog<br>data/songs.csv]
+    B --> C[The Loop<br>score every song<br>with the Scoring Rule]
+    C --> D[The Ranking<br>sort by score, descending]
+    D --> E[Output<br>Top K songs<br>+ score + explanation]
+```
+
+In words: the user profile comes in, `load_songs` reads the CSV into song dictionaries, `score_song` judges each song one at a time against the profile (producing a score and the reasons behind it), and `recommend_songs` sorts all scored songs and returns the top *k* with explanations.
+
+### Biases I Expect
+
+- **Genre over-prioritization.** At +2.0, a genre match alone outscores a perfect mood match (+1.0). A mediocre lofi track can beat a jazz track that fits the user's mood and energy perfectly — great songs get ignored for having the "wrong" label.
+- **Filter bubble.** The system only recommends what already resembles the profile. A lofi-chill user will never be shown *Cumbia Sunrise* or *Iron Choir*, so their profile never gets the chance to broaden — the loop reinforces itself.
+- **Exact-string matching is brittle.** "indie pop" ≠ "pop" and "relaxed" ≠ "chill" to this system, even though humans would call them neighbors. Genres with many near-synonyms get unfairly fragmented.
+- **Catalog imbalance.** Lofi has 3 of the 20 songs while metal, reggae, and latin have 1 each — genres with more entries simply have more chances to appear in any top-5 list.
 
 ---
 
