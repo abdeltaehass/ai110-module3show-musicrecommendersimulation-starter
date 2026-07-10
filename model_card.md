@@ -2,60 +2,51 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeMatch 1.0**
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
+VibeMatch is a classroom simulation of a content-based music recommender. Given one user's stated taste — a favorite genre, a favorite mood, an ideal energy level, and whether they like acoustic sounds — it ranks a small song catalog and returns the top five matches, each with a plain-language reason.
 
-Prompts:  
+It assumes the user can describe their own taste up front, that their taste fits the catalog's vocabulary (a "k-pop" fan is out of luck), and that taste doesn't change between requests.
 
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+**Intended for:** learning how recommendation scoring works, experimenting with weights, and discussing algorithmic bias.
+
+**Not intended for:** real users or production use. It should not be used to make claims about real listening behavior, to discover genuinely new music (it recommends more of what you already said you like), or for anyone whose taste vocabulary isn't represented in the catalog — it will fail silently and still look confident.
 
 ---
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+Think of the system as a judge with a scorecard. For every song in the catalog, it asks four questions:
 
-Prompts:  
+1. **Is this the user's favorite genre?** If yes, the song earns 2 points — the biggest prize, because genre is the strongest signal of taste.
+2. **Is this the mood they asked for?** If yes, 1 point.
+3. **How close is the song's energy to what they want?** This isn't a yes/no question — a song at exactly the right intensity earns 1.5 points, and the points shrink the further away it is. Someone who wants calm music shouldn't be handed the loudest track, and someone who wants a workout shouldn't get a lullaby.
+4. **If the user likes acoustic sounds, does this song deliver them?** A small half-point bonus.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+Add the points up and you get the song's score. Do that for all 20 songs, sort from highest to lowest, and the top five become the recommendations. Alongside each score, the system keeps the list of reasons it awarded points, so every recommendation can explain itself.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+The starter project came with empty function shells; I implemented all of the loading, scoring, and ranking logic, chose the weights, added the acoustic bonus, and made the two code paths (the function-based one and the class-based one) share a single scoring brain so they can never disagree.
 
 ---
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
+The catalog is `data/songs.csv`: **20 fictional songs** described by genre, mood, energy, tempo, valence (musical positivity), danceability, and acousticness. The starter file had 10 songs across 7 genres; I doubled it, adding 9 genres (hip hop, country, classical, edm, folk, metal, r&b, reggae, latin) and 7 moods (confident, nostalgic, melancholy, energetic, romantic, angry, sad) so the recommender would have real variety to choose from.
 
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+What the data can't see: lyrics, language, artist popularity, era or decade, vocals vs. instrumental, cultural context, and anything about *why* a person loves a song (memories, friends, trends). The catalog is also imbalanced — lofi has 3 tracks while metal, reggae, and latin have 1 each — which quietly gives some genres more chances to be recommended.
 
 ---
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+- **Coherent listeners get accurate lists.** The Chill Lofi profile's top three were the catalog's three lofi tracks, in energy-closeness order, with the two runner-ups being chill-adjacent outsiders (ambient, jazz). That matches exactly what a human would pick.
+- **Every recommendation explains itself.** The reasons list ("genre match (+2.0); energy 0.35 vs target 0.35 (+1.50)") makes the system auditable — when a result looks odd, you can see precisely why it happened.
+- **The energy-closeness idea works.** Rewarding *proximity* instead of *magnitude* let songs like *Coffee Shop Stories* (jazz, but quiet and acoustic) surface for the lofi listener — a vibe match across genre lines, which is the behavior real content-based systems aim for.
+- **Profiles separate cleanly.** The pop and lofi test profiles shared zero songs in their top fives; pop and rock swapped their #1 picks exactly as intuition predicts.
 
 ---
 
@@ -134,23 +125,18 @@ Profile: Unknown Genre (genre=k-pop, mood=focused, energy=0.5)
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+1. **Genre and mood similarity instead of exact matching.** Right now "indie pop" earns zero genre points from a pop fan and "relaxed" earns zero mood points from a chill fan, even though humans treat them as neighbors. A small similarity table (indie pop ≈ pop: 0.8) would award partial credit and fix the vocabulary brittleness — including giving the k-pop fan a reasonable pop-based list instead of silent failure.
+2. **A confidence signal and a diversity rule.** Scores should be normalized so users (or the UI) can tell a strong 5.0 match from a weak 1.5 guess, and the ranking should cap how many near-identical songs fill the top five — directly attacking the filter bubble and the energy-floor bias found in testing.
+3. **Learning from feedback.** Let likes and skips nudge the profile's weights over time instead of trusting a one-time questionnaire. That's the first step from pure content-based filtering toward the collaborative behavior real platforms use.
 
 ---
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+My biggest learning moment was the weight-shift experiment. I expected that doubling the energy weight and halving genre would shuffle every list — instead, the three realistic profiles didn't change *at all*, and only the contradictory "sad but high energy" user was affected, losing their single sad song from the top five. That taught me something general: **weights don't matter when a user's preferences agree with each other; they decide everything when preferences conflict.** Tuning a recommender is really about deciding who wins the edge cases.
 
-Prompts:  
+AI tools accelerated almost every phase — drafting the expanded catalog, sketching the scoring math, and generating the adversarial test profiles I probably wouldn't have thought of alone. But I learned to double-check everything against actual runs: the most valuable habit was tracing one song's score by hand (*Sunrise City*: 2.0 + 1.0 + 1.5 × (1 − 0.02) = 4.47) to confirm the code did what the recipe claimed, and reading the printed "reasons" to catch logic that looked right but scored wrong.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+What surprised me most is how little machinery it takes for output to *feel* like a real recommendation. Twenty songs, four if-statements, and a sort — yet "Library Rain, because: genre match, mood match, perfect energy, acoustic feel" reads like Spotify talking to you. The explanation is doing as much psychological work as the math. It changed how I look at real apps: when a recommendation feels uncannily personal, it may just be a weighted sum with good reasons attached — and the same simplicity means the biases I found here (filter bubbles, catalog imbalance, silent failure for unusual tastes) are plausibly hiding inside systems used by billions of people.
+
+If I extended this, I'd start with the similarity matrix from Future Work — exact string matching was the single biggest source of unfair results in my tests.

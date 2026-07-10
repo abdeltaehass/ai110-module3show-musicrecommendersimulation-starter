@@ -2,16 +2,7 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+**VibeMatch 1.0** is a content-based music recommender simulation. It loads a 20-song catalog from CSV, scores every song against a user's taste profile (favorite genre, favorite mood, target energy, acoustic preference) using a weighted point system, and prints the top five matches in the terminal — each with a plain-language explanation of exactly why it was picked. The project includes a stress-test suite of five user profiles (including two adversarial ones), a weight-shift experiment, and a full [model card](model_card.md) documenting the biases discovered along the way: filter bubbles, an energy-score floor that drowns out weak taste signals, and silent failure for users whose genre isn't in the catalog.
 
 ---
 
@@ -172,15 +163,13 @@ Top recommendations:
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- **Tiny, imbalanced catalog.** 20 fictional songs; lofi has 3 entries while metal, reggae, and latin have 1 each, so some favorite genres simply get more chances to fill a top-5 list.
+- **The energy term is a score floor.** Every song earns energy-closeness points regardless of taste fit, so songs with zero genre/mood connection can crack the top 5 on intensity alone.
+- **Exact-string matching is brittle.** "indie pop" ≠ "pop" and "relaxed" ≠ "chill" to this system; users with vocabulary outside the catalog (e.g. a k-pop fan) get confident-looking recommendations built on nothing.
+- **No understanding of content.** Lyrics, language, artist, era, and cultural context are invisible to the scoring.
+- **Filter bubble by design.** It only recommends more of what the profile already says — taste never gets the chance to broaden.
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+The [model card](model_card.md) goes deeper on each of these, with the test evidence behind them.
 
 ---
 
@@ -190,10 +179,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+Building this made the "magic" of recommendation systems feel very mechanical — and that was the point. A recommendation is just data turned into a number turned into a rank: describe each song as features, describe the user as targets, measure the distance between them, and sort. What surprised me was how much the *explanations* mattered. The same ranked list feels arbitrary without reasons and feels intelligent with them, which suggests that a lot of what makes real apps feel like they "get you" is presentation layered over fairly simple math. The weight experiment was the deepest lesson: changing the weights did nothing to users whose preferences all agreed, but completely rewrote the results for the one user with contradictory taste. Whoever picks the weights is quietly deciding how conflicts in human taste get resolved.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Bias didn't show up where I expected. I assumed the genre weight (the biggest number) would be the main source of unfairness, but the subtler problem was the energy term: because *every* song earns some energy points, it acts as a floor that drowns out the signals of users with unusual tastes, and it let the same "crowd-pleaser" songs sneak into almost everyone's list. Add in catalog imbalance (three lofi tracks vs. one metal track) and exact-string matching that treats "indie pop" as unrelated to "pop," and you get a system that systematically serves some users better than others — without a single line of intentionally unfair code. That's the real takeaway: in recommender systems, bias lives in the data and the scoring design, not in malice.
 
 
 
